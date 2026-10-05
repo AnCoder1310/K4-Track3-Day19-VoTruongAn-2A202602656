@@ -89,7 +89,20 @@ def _openai_client(provider: str):
     from openai import OpenAI
 
     cfg = PROVIDERS[provider]
-    return OpenAI(api_key=os.environ[cfg["key"]], base_url=cfg["base_url"])
+
+    api_key = os.environ[cfg["key"]]
+
+    # Allow environment variable to override the provider default.
+    # This is useful for OpenAI-compatible local proxies such as 9Router.
+    base_url = os.getenv(
+        f"{provider.upper()}_BASE_URL",
+        cfg["base_url"],
+    )
+
+    return OpenAI(
+        api_key=api_key,
+        base_url=base_url,
+    )
 
 class MeteredLLM:
     """`chat` and `embed` are drop-in `llm_fn` / `embedding_fn`; `usage` accumulates across calls."""
